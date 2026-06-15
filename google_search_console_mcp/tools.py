@@ -272,7 +272,7 @@ def index_inspect(body: IndexInspectRequestBody) -> ApiObjectResponse:
     name="google_search_console_health_check",
     description="Check server readiness and basic connectivity.",
 )
-def stripe_health_check() -> str:
+def google_search_console_health_check() -> str:
     """Health check endpoint."""
     return json.dumps(
         {
