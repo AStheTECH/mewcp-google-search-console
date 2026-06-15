@@ -10,7 +10,7 @@ from .schemas import (
     SiteRequestParams,
     IndexInspectRequestBody
 )
-from google_search_mcp.service import get_service
+from google_search_console_mcp.service import get_service
 
 logger = logging.getLogger("search-console-mcp-server")
 

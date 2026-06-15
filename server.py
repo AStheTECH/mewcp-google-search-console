@@ -6,9 +6,9 @@ import logging
 from fastmcp import FastMCP
 from fastmcp_credentials import CredentialMiddleware, HeaderCredentialBackend
 
-from google_search_mcp.cli import parse_args
-from google_search_mcp.config import configure_logging
-from google_search_mcp.tools import register_tools
+from google_search_console_mcp.cli import parse_args
+from google_search_console_mcp.config import configure_logging
+from google_search_console_mcp.tools import register_tools
 
 configure_logging()
 logger = logging.getLogger("search-console-mcp-server")
