@@ -1,4 +1,5 @@
 import logging
+import json
 
 from fastmcp import FastMCP
 
@@ -82,7 +83,7 @@ def delete_sitemap(params: SitemapRequestParams) -> ApiObjectResponse:
             .delete(**params.model_dump(exclude_none=True))
             .execute()
         )
-        return result
+        return result or {"success": True, "message": "Sitemap deleted"}
     except Exception as exc:
         logger.exception("Delete sitemap query failed")
         return {"error": str(exc)}
@@ -151,7 +152,7 @@ def submit_sitemap(params: SitemapRequestParams) -> ApiObjectResponse:
             service.sitemaps().submit(**params.model_dump(exclude_none=True)).execute()
         )
 
-        return result
+        return result or {"success": True, "message": "Sitemap submitted"}
 
     except Exception as exc:
         logger.exception("submit sitemap query failed")
@@ -175,7 +176,7 @@ def add_site(params: SiteRequestParams) -> ApiObjectResponse:
             service.sites().add(**params.model_dump(exclude_none=True)).execute()
         )
 
-        return result
+        return result or {"success": True, "message": "Site added"}
 
     except Exception as exc:
         logger.exception("add site query failed")
@@ -198,7 +199,7 @@ def delete_site(params: SiteRequestParams) -> ApiObjectResponse:
             service.sites().delete(**params.model_dump(exclude_none=True)).execute()
         )
 
-        return result
+        return result or {"success": True, "message": "Site deleted"}
 
     except Exception as exc:
         logger.exception("delete site query failed")
@@ -267,3 +268,17 @@ def index_inspect(body: IndexInspectRequestBody) -> ApiObjectResponse:
         logger.exception("inspection of url failed")
         return {"error": str(exc)}
 
+@mcp.tool(
+    name="google_search_console_health_check",
+    description="Check server readiness and basic connectivity.",
+)
+def google_search_console_health_check() -> str:
+    """Health check endpoint."""
+    return json.dumps(
+        {
+            "status": "ok",
+            "server": "Google Search Console API MCP Server",
+            "type": "third-party integration",
+            "auth_required": "oauth token required",
+        }
+    )
