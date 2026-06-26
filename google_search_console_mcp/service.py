@@ -15,7 +15,7 @@ def get_service():
     if not cred.access_token:
         raise ValueError("No OAuth access token available in credentials")
     logger.info("Creating Google Search Console API service with provided access token")
-    creds = Credentials(token=cred.access_token, scopes=cred.scopes)
+    creds = Credentials(token=cred.access_token)
     service = build("searchconsole", "v1", credentials=creds)
     logger.info("Google Search Console API service created successfully")
     return service
