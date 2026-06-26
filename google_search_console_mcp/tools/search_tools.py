@@ -26,7 +26,7 @@ def register_search_tools(mcp: FastMCP) -> None:
             "Results are sorted by click count descending. If two rows have the same click count, "
             "they are sorted in an arbitrary way."
         ),
-        annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=True),
+        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def get_search_analysis(request: SearchAnalysisRequest) -> SearchAnalysisResult:
         tlog = ToolLogger(logger, "get_search_analysis")

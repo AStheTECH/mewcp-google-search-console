@@ -22,7 +22,7 @@ def register_url_inspection_tools(mcp: FastMCP) -> None:
             "Presently only the status of the version in the Google index is available; "
             "you cannot test the indexability of a live URL."
         ),
-        annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=True),
+        annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def inspect_index(body: IndexInspectRequestBody) -> IndexInspectResult:
         tlog = ToolLogger(logger, "inspect_index")
