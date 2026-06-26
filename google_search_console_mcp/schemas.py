@@ -1,15 +1,28 @@
-from typing import Any, Optional, TypedDict, Literal, List
-from pydantic import BaseModel, Field
+from typing import Any, Optional, Literal, List
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class ToolError(TypedDict):
-    error: str
+# ---------------------------------------------------------------------------
+# Base classes
+# ---------------------------------------------------------------------------
+
+class ToolError(BaseModel):
+    code: str
+    message: str
+    details: Any = None
 
 
-SearchToolResponse = dict[str, Any] | ToolError
+class ToolResult(BaseModel):
+    success: bool
+    statusCode: int
+    retriable: bool = False
+    retry_after_seconds: int | None = None
+    error: ToolError | None = None
 
-ApiObjectResponse = dict[str, Any] | ToolError
 
+# ---------------------------------------------------------------------------
+# Request models
+# ---------------------------------------------------------------------------
 
 class DimensionFilter(BaseModel):
     """A single filter to test against a row: a dimension, an operator, and a value."""
@@ -95,18 +108,140 @@ class SearchAnalysisRequest(BaseModel):
         description="If 'all' (case-insensitive), data will include fresh data. If 'final' (case-insensitive) or if omitted, the returned data will include only finalized data. If 'hourly_all' (case-insensitive), data will include an hourly breakdown; this indicates that hourly data includes partial data and should be used when grouping by the HOUR API dimension.",
     )
 
+
 class SitemapRequestParams(BaseModel):
     feedpath: str = Field(..., description="The URL of the actual sitemap. For example: http://www.example.com/sitemap.xml")
     siteUrl: str = Field(..., description="The URL of the property as defined in Search Console. For example: http://www.example.com/")
+
 
 class ListSitemapRequestParams(BaseModel):
     siteUrl: str = Field(..., description="The URL of the property as defined in Search Console. For example: http://www.example.com/")
     sitemapIndex: Optional[str] = Field(None, description="A URL of a site's sitemap index. For example: http://www.example.com/sitemapindex.xml")
 
+
 class SiteRequestParams(BaseModel):
     siteUrl: str = Field(..., description="The URL of the property as defined in Search Console. For example: http://www.example.com/")
+
 
 class IndexInspectRequestBody(BaseModel):
     inspectionUrl: str = Field(..., description="Fully-qualified URL to inspect. Must be under the property specified in 'siteUrl'.")
     siteUrl: str = Field(..., description="The URL of the property as defined in Search Console. Note that URL-prefix properties must include a trailing / mark. Examples: https://www.example.com/ for a URL-prefix property, or sc-domain:example.com for a Domain property.")
     languageCode: Optional[str] = Field(None, description="An IETF BCP-47 language code representing the requested language for translated issue messages, e.g.'en-US', or 'de-CH'. Default value is 'en-US'.")
+
+
+# ---------------------------------------------------------------------------
+# Per-tool data + result models
+# ---------------------------------------------------------------------------
+
+class SearchAnalysisData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    rows: list = []
+    responseAggregationType: str | None = None
+
+
+class SearchAnalysisResult(ToolResult):
+    data: SearchAnalysisData | None = None
+
+
+class DeleteSitemapData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    success: bool
+    message: str | None = None
+
+
+class DeleteSitemapResult(ToolResult):
+    data: DeleteSitemapData | None = None
+
+
+class SitemapData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    path: str | None = None
+    lastSubmitted: str | None = None
+    isPending: bool | None = None
+    isSitemapsIndex: bool | None = None
+    type: str | None = None
+    lastDownloaded: str | None = None
+    warnings: int | None = None
+    errors: int | None = None
+    contents: list | None = None
+
+
+class SitemapResult(ToolResult):
+    data: SitemapData | None = None
+
+
+class SitemapListData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    sitemap: list | None = None
+
+
+class SitemapListResult(ToolResult):
+    data: SitemapListData | None = None
+
+
+class SubmitSitemapData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    success: bool
+    message: str | None = None
+
+
+class SubmitSitemapResult(ToolResult):
+    data: SubmitSitemapData | None = None
+
+
+class AddSiteData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    success: bool
+    message: str | None = None
+
+
+class AddSiteResult(ToolResult):
+    data: AddSiteData | None = None
+
+
+class DeleteSiteData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    success: bool
+    message: str | None = None
+
+
+class DeleteSiteResult(ToolResult):
+    data: DeleteSiteData | None = None
+
+
+class SiteData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    siteUrl: str | None = None
+    permissionLevel: str | None = None
+
+
+class SiteResult(ToolResult):
+    data: SiteData | None = None
+
+
+class SiteListData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    siteEntry: list | None = None
+
+
+class SiteListResult(ToolResult):
+    data: SiteListData | None = None
+
+
+class IndexInspectData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    inspectionResult: dict | None = None
+
+
+class IndexInspectResult(ToolResult):
+    data: IndexInspectData | None = None
