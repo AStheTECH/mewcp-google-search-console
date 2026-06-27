@@ -4,6 +4,7 @@ import logging
 
 from fastmcp import FastMCP
 from mcp.types import ToolAnnotations
+from pydantic import Field
 
 from .. import service
 from ..logging_utils import ToolLogger
@@ -15,7 +16,6 @@ from ..schemas import (
     SiteData,
     SiteListData,
     SiteListResult,
-    SiteRequestParams,
     SiteResult,
 )
 from ._helpers import _handle_sdk_exc
@@ -32,12 +32,14 @@ def register_sites_tools(mcp: FastMCP) -> None:
             readOnlyHint=False, destructiveHint=False, openWorldHint=True
         ),
     )
-    def add_site(params: SiteRequestParams) -> AddSiteResult:
+    def add_site(
+        siteUrl: str = Field(..., description="The URL of the property as defined in Search Console. For example: http://www.example.com/"),
+    ) -> AddSiteResult:
         tlog = ToolLogger(logger, "add_site")
 
         try:
             svc = service.get_service()
-            result = svc.sites().add(**params.model_dump(exclude_none=True)).execute()
+            result = svc.sites().add(siteUrl=siteUrl).execute()
             tlog.success()
             return AddSiteResult(
                 success=True,
@@ -61,12 +63,14 @@ def register_sites_tools(mcp: FastMCP) -> None:
             readOnlyHint=False, destructiveHint=True, openWorldHint=True
         ),
     )
-    def delete_site(params: SiteRequestParams) -> DeleteSiteResult:
+    def delete_site(
+        siteUrl: str = Field(..., description="The URL of the property as defined in Search Console. For example: http://www.example.com/"),
+    ) -> DeleteSiteResult:
         tlog = ToolLogger(logger, "delete_site")
 
         try:
             svc = service.get_service()
-            result = svc.sites().delete(**params.model_dump(exclude_none=True)).execute()
+            result = svc.sites().delete(siteUrl=siteUrl).execute()
             tlog.success()
             return DeleteSiteResult(
                 success=True,
@@ -85,12 +89,14 @@ def register_sites_tools(mcp: FastMCP) -> None:
             readOnlyHint=True, destructiveHint=False, openWorldHint=True
         ),
     )
-    def get_site(params: SiteRequestParams) -> SiteResult:
+    def get_site(
+        siteUrl: str = Field(..., description="The URL of the property as defined in Search Console. For example: http://www.example.com/"),
+    ) -> SiteResult:
         tlog = ToolLogger(logger, "get_site")
 
         try:
             svc = service.get_service()
-            result = svc.sites().get(**params.model_dump(exclude_none=True)).execute()
+            result = svc.sites().get(siteUrl=siteUrl).execute()
             tlog.success()
             return SiteResult(success=True, statusCode=200, data=SiteData(**result))
         except Exception as exc:

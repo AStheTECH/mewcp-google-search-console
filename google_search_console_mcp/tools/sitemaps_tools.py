@@ -4,17 +4,16 @@ import logging
 
 from fastmcp import FastMCP
 from mcp.types import ToolAnnotations
+from pydantic import Field
 
 from .. import service
 from ..logging_utils import ToolLogger
 from ..schemas import (
     DeleteSitemapData,
     DeleteSitemapResult,
-    ListSitemapRequestParams,
     SitemapData,
     SitemapListData,
     SitemapListResult,
-    SitemapRequestParams,
     SitemapResult,
     SubmitSitemapData,
     SubmitSitemapResult,
@@ -40,12 +39,15 @@ def register_sitemaps_tools(mcp: FastMCP) -> None:
             readOnlyHint=False, destructiveHint=True, openWorldHint=True
         ),
     )
-    def delete_sitemap(params: SitemapRequestParams) -> DeleteSitemapResult:
+    def delete_sitemap(
+        feedpath: str = Field(..., description="The URL of the actual sitemap. For example: http://www.example.com/sitemap.xml"),
+        siteUrl: str = Field(..., description="The URL of the property as defined in Search Console. For example: http://www.example.com/"),
+    ) -> DeleteSitemapResult:
         tlog = ToolLogger(logger, "delete_sitemap")
 
         try:
             svc = service.get_service()
-            result = svc.sitemaps().delete(**params.model_dump(exclude_none=True)).execute()
+            result = svc.sitemaps().delete(feedpath=feedpath, siteUrl=siteUrl).execute()
             data = result or {"success": True, "message": "Sitemap deleted"}
             tlog.success()
             return DeleteSitemapResult(success=True, statusCode=200, data=DeleteSitemapData(**data))
@@ -61,12 +63,15 @@ def register_sitemaps_tools(mcp: FastMCP) -> None:
             readOnlyHint=True, destructiveHint=False, openWorldHint=True
         ),
     )
-    def get_sitemap(params: SitemapRequestParams) -> SitemapResult:
+    def get_sitemap(
+        feedpath: str = Field(..., description="The URL of the actual sitemap. For example: http://www.example.com/sitemap.xml"),
+        siteUrl: str = Field(..., description="The URL of the property as defined in Search Console. For example: http://www.example.com/"),
+    ) -> SitemapResult:
         tlog = ToolLogger(logger, "get_sitemap")
 
         try:
             svc = service.get_service()
-            result = svc.sitemaps().get(**params.model_dump(exclude_none=True)).execute()
+            result = svc.sitemaps().get(feedpath=feedpath, siteUrl=siteUrl).execute()
             tlog.success()
             return SitemapResult(success=True, statusCode=200, data=SitemapData(**result))
         except Exception as exc:
@@ -82,12 +87,18 @@ def register_sitemaps_tools(mcp: FastMCP) -> None:
             readOnlyHint=True, destructiveHint=False, openWorldHint=True
         ),
     )
-    def list_sitemap(params: ListSitemapRequestParams) -> SitemapListResult:
+    def list_sitemap(
+        siteUrl: str = Field(..., description="The URL of the property as defined in Search Console. For example: http://www.example.com/"),
+        sitemapIndex: str | None = Field(None, description="A URL of a site's sitemap index. For example: http://www.example.com/sitemapindex.xml"),
+    ) -> SitemapListResult:
         tlog = ToolLogger(logger, "list_sitemap")
 
         try:
             svc = service.get_service()
-            result = svc.sitemaps().list(**params.model_dump(exclude_none=True)).execute()
+            kwargs = {"siteUrl": siteUrl}
+            if sitemapIndex is not None:
+                kwargs["sitemapIndex"] = sitemapIndex
+            result = svc.sitemaps().list(**kwargs).execute()
             tlog.success()
             return SitemapListResult(success=True, statusCode=200, data=SitemapListData(**result))
         except Exception as exc:
@@ -102,12 +113,15 @@ def register_sitemaps_tools(mcp: FastMCP) -> None:
             readOnlyHint=False, destructiveHint=False, openWorldHint=True
         ),
     )
-    def submit_sitemap(params: SitemapRequestParams) -> SubmitSitemapResult:
+    def submit_sitemap(
+        feedpath: str = Field(..., description="The URL of the actual sitemap. For example: http://www.example.com/sitemap.xml"),
+        siteUrl: str = Field(..., description="The URL of the property as defined in Search Console. For example: http://www.example.com/"),
+    ) -> SubmitSitemapResult:
         tlog = ToolLogger(logger, "submit_sitemap")
 
         try:
             svc = service.get_service()
-            result = svc.sitemaps().submit(**params.model_dump(exclude_none=True)).execute()
+            result = svc.sitemaps().submit(feedpath=feedpath, siteUrl=siteUrl).execute()
             data = result or {"success": True, "message": "Sitemap submitted"}
             tlog.success()
             return SubmitSitemapResult(success=True, statusCode=200, data=SubmitSitemapData(**data))
